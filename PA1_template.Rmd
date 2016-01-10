@@ -16,7 +16,6 @@ Code to load the data:
         datawithna <- read.csv("activity.csv")
         datawithna$date  <- as.Date(datawithna$date)
         dataclean  <- datawithna[!is.na(datawithna$step),]
-        head(dataclean)
 
 ```
 
@@ -28,7 +27,7 @@ stepsperday  <- ddply(dataclean, .(date), summarize, steps = sum(steps))
 
 ###Make a histogram of the total number of steps taken each day
 ```{r}
-hist(stepsperday$steps, xlab = "total number of steps taken each day", main = "Histogram of the total number of steps taken each day")
+plot(x = stepsperday$date, y=stepsperday$steps,  type = "h", xlab= "date", ylab = "total number of steps taken each day", main = "Histogram of the total number of steps taken each day")
 ```
 
 ###Calculate and report the mean and median of the total number of steps taken per day
@@ -68,10 +67,45 @@ sum(is.na(datawithna$step))
 
 ###Strategy for filling in all of the missing values in the dataset:
 
-To fill in all the missing values in the dataset the mean for that day will be used to replace the missing value.
+To fill in all the missing values in the dataset the mean mean for that 5-minute interval will be used to replace the missing value.
 
-Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+##Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
+```{r}
+completeddata <- datawithna
+
+for (i in 1:nrow(completeddata)){
+    if (is.na(completeddata$steps[i])){
+        completeddata$steps[i] <- stepsperinterval$steps[which(completeddata$interval[i] == stepsperinterval$interval)]}
+}
+```
+
+
+###Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
+```{r}
+stepsperdaycompletedset  <- ddply(completeddata, .(date), summarize, steps = sum(steps))
+plot(x = stepsperdaycompletedset$date, y=stepsperdaycompletedset$steps,  type = "h", xlab= "date", ylab = "total number of steps taken each day", main = "Histogram of the total number of steps taken each day")
+mean(stepsperdaycompletedset$steps)
+median(stepsperdaycompletedset$steps)
+
+```
+
+###Do these values differ from the estimates from the first part of the assignment? 
+there is no difference on the Mean and a minimal difference on the median:
+```{r}
+mean(stepsperday$steps)-mean(stepsperdaycompletedset$steps)
+median(stepsperday$steps)-median(stepsperdaycompletedset$steps)
+
+
+```
+
+###What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+```{r}
+sum(completeddata$steps) - sum(dataclean$steps)
+
+```
+the estimates increase.
 
 ##Are there differences in activity patterns between weekdays and weekends?
 
